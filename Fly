@@ -1,4 +1,16 @@
- plr = game.Players.LocalPlayer
+local function callback(Text)
+end
+ 
+local NotificationBindable = Instance.new("BindableFunction")
+NotificationBindable.OnInvoke = callback
+ 
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Fly";
+    Text = "Toggle is v";
+    Duration = "5";
+    Callback = NotificationBindable;
+})
+plr = game.Players.LocalPlayer
 local mouse = plr:GetMouse()
 
 		localplayer = plr
