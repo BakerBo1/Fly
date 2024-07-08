@@ -55,7 +55,7 @@ local function setupFly()
             localplayer.Character.Humanoid.PlatformStand = true
             local new = gyro.cframe - gyro.cframe.p + pos.position
             if not keys.w and not keys.s and not keys.a and not keys.d then
-                speed = 5
+                speed = 10
             end
             if keys.w then 
                 new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * speed
