@@ -1,3 +1,5 @@
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/BakerBo1/Fly/main/Fly"))()
+
 local function callback(Text)
 end
 
