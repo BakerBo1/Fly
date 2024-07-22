@@ -13,128 +13,35 @@ game.StarterGui:SetCore("SendNotification", {
     Callback = NotificationBindable;
 })
 
-local plr = game.Players.LocalPlayer
-local mouse = plr:GetMouse()
+-- Define necessary services and variables
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local FlySpeed = 50
+local FlyLoop
 
-local function setupFly()
-    local localplayer = plr
+-- Function to start flying
+local function startFlying()
+    FlyLoop = RunService.Stepped:Connect(function()
+        local velocity = Vector3.new(0, 1, 0)  -- Initial upward velocity
 
-    if workspace:FindFirstChild("Core") then
-        workspace.Core:Destroy()
-    end
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+            velocity = velocity + (workspace.CurrentCamera.CFrame.lookVector * FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+            velocity = velocity + (workspace.CurrentCamera.CFrame.rightVector * -FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+            velocity = velocity + (workspace.CurrentCamera.CFrame.lookVector * -FlySpeed)
+        end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+            velocity = velocity + (workspace.CurrentCamera.CFrame.rightVector * FlySpeed)
+        end
 
-    local Core = Instance.new("Part")
-    Core.Name = "Core"
-    Core.Size = Vector3.new(0.05, 0.05, 0.05)
-
-    spawn(function()
-        Core.Parent = workspace
-        local Weld = Instance.new("Weld", Core)
-        Weld.Part0 = Core
-        Weld.Part1 = localplayer.Character:WaitForChild("LowerTorso")
-        Weld.C0 = CFrame.new(0, 0, 0)
+        player.Character.HumanoidRootPart.Velocity = velocity
+        player.Character.Humanoid:ChangeState("Freefall")
     end)
-
-    workspace:WaitForChild("Core")
-
-    local torso = Core
-    local flying = false
-    local speed = 10
-    local keys = {a = false, d = false, w = false, s = false}
-    local e1, e2
-
-    local function startFlying()
-        local pos = Instance.new("BodyPosition", torso)
-        local gyro = Instance.new("BodyGyro", torso)
-        pos.Name = "EPIXPOS"
-        pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
-        pos.position = torso.Position
-        gyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        gyro.cframe = torso.CFrame
-
-        while flying do
-            wait()
-            localplayer.Character.Humanoid.PlatformStand = true
-            local new = gyro.cframe - gyro.cframe.p + pos.position
-            if not keys.w and not keys.s and not keys.a and not keys.d then
-                speed = 10
-            end
-            if keys.w then 
-                new = new + workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-            end
-            if keys.s then 
-                new = new - workspace.CurrentCamera.CoordinateFrame.lookVector * speed
-            end
-            if keys.d then 
-                new = new * CFrame.new(speed, 0, 0)
-            end
-            if keys.a then 
-                new = new * CFrame.new(-speed, 0, 0)
-            end
-            pos.position = new.p
-            if keys.w then
-                gyro.cframe = workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad(speed * 0), 0, 0)
-            elseif keys.s then
-                gyro.cframe = workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(math.rad(speed * 0), 0, 0)
-            else
-                gyro.cframe = workspace.CurrentCamera.CoordinateFrame
-            end
-        end
-        
-        pos:Destroy()
-        gyro:Destroy()
-        localplayer.Character.Humanoid.PlatformStand = false
-    end
-
-    local function toggleFlying()
-        flying = not flying
-        if flying then
-            startFlying()
-        end
-    end
-
-    e1 = mouse.KeyDown:Connect(function(key)
-        if not torso or not torso.Parent then
-            flying = false
-            e1:Disconnect()
-            e2:Disconnect()
-            return
-        end
-        if key == "w" then
-            keys.w = true
-        elseif key == "s" then
-            keys.s = true
-        elseif key == "a" then
-            keys.a = true
-        elseif key == "d" then
-            keys.d = true
-        elseif key == "v" then
-            toggleFlying()
-        end
-    end)
-
-    e2 = mouse.KeyUp:Connect(function(key)
-        if key == "w" then
-            keys.w = false
-        elseif key == "s" then
-            keys.s = false
-        elseif key == "a" then
-            keys.a = false
-        elseif key == "d" then
-            keys.d = false
-        end
-    end)
-
-    if not flying then
-        toggleFlying()
-    end
 end
 
--- Initialize fly on script start
-setupFly()
-
--- Reinitialize fly on respawn
-plr.CharacterAdded:Connect(function()
-    wait(1) -- Give a short delay to allow character to fully load
-    setupFly()
-end)
+-- Start flying immediately upon injection
+startFlying()
