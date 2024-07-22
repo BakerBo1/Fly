@@ -1,47 +1,48 @@
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/BakerBo1/Fly/main/Fly"))()
-
-local function callback(Text)
-end
-
-local NotificationBindable = Instance.new("BindableFunction")
-NotificationBindable.OnInvoke = callback
-
-game.StarterGui:SetCore("SendNotification", {
-    Title = "Fly";
-    Text = "Toggle is v";
-    Duration = "5";
-    Callback = NotificationBindable;
-})
-
--- Define necessary services and variables
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+-- Fly Script
 local player = game.Players.LocalPlayer
-local FlySpeed = 50
-local FlyLoop
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local FlySpeed = 50 -- Adjust the speed as needed
 
--- Function to start flying
 local function startFlying()
     FlyLoop = RunService.Stepped:Connect(function()
-        local velocity = Vector3.new(0, 1, 0)  -- Initial upward velocity
+        spawn(function()
+            pcall(function()
+                local speed = FlySpeed
+                local velocity = Vector3.new(0, 1, 0)
 
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-            velocity = velocity + (workspace.CurrentCamera.CFrame.lookVector * FlySpeed)
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-            velocity = velocity + (workspace.CurrentCamera.CFrame.rightVector * -FlySpeed)
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-            velocity = velocity + (workspace.CurrentCamera.CFrame.lookVector * -FlySpeed)
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-            velocity = velocity + (workspace.CurrentCamera.CFrame.rightVector * FlySpeed)
-        end
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                    velocity = velocity + (workspace.CurrentCamera.CFrame.LookVector * speed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                    velocity = velocity + (workspace.CurrentCamera.CFrame.RightVector * -speed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                    velocity = velocity + (workspace.CurrentCamera.CFrame.LookVector * -speed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                    velocity = velocity + (workspace.CurrentCamera.CFrame.RightVector * speed)
+                end
 
-        player.Character.HumanoidRootPart.Velocity = velocity
-        player.Character.Humanoid:ChangeState("Freefall")
+                player.Character.HumanoidRootPart.Velocity = velocity
+                player.Character.Humanoid:ChangeState("Freefall")
+            end)
+        end)
     end)
 end
 
--- Start flying immediately upon injection
+local function stopFlying()
+    if FlyLoop then
+        FlyLoop:Disconnect()
+        FlyLoop = nil
+        player.Character.Humanoid:ChangeState("Landing")
+    end
+end
+
+-- Ensure fly starts immediately upon script injection
 startFlying()
+
+-- Ensure fly reinitializes on respawn
+player.CharacterAdded:Connect(function(character)
+    startFlying()
+end)
