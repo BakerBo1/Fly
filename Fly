@@ -1,10 +1,37 @@
+local function callback(Text)
+end
+ 
+local NotificationBindable = Instance.new("BindableFunction")
+NotificationBindable.OnInvoke = callback
+ 
+game.StarterGui:SetCore("SendNotification", {
+    Title = "Fly (toggle is V)";
+    Text = "By @moonwalker.24";
+    Duration = "5";
+    Callback = NotificationBindable;
+})
+
 -- Fly Script
 local player = game.Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local FlySpeed = 50 -- Adjust the speed as needed
 
+-- GUI setup
+local playerGui = player:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui", playerGui)
+local toggleButton = Instance.new("TextButton", screenGui)
+toggleButton.Size = UDim2.new(0, 100, 0, 50)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.Text = "Fly: Off"
+
+local flying = false
+local FlyLoop
+
 local function startFlying()
+    if flying then return end
+    flying = true
+    toggleButton.Text = "Fly: On"
     FlyLoop = RunService.Stepped:Connect(function()
         spawn(function()
             pcall(function()
@@ -32,12 +59,26 @@ local function startFlying()
 end
 
 local function stopFlying()
+    if not flying then return end
+    flying = false
+    toggleButton.Text = "Fly: Off"
     if FlyLoop then
         FlyLoop:Disconnect()
         FlyLoop = nil
         player.Character.Humanoid:ChangeState("Landing")
     end
 end
+
+-- Toggle fly on "V" key press
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.V then
+        if flying then
+            stopFlying()
+        else
+            startFlying()
+        end
+    end
+end)
 
 -- Ensure fly starts immediately upon script injection
 startFlying()
